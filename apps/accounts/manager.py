@@ -36,7 +36,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         # Adds a user to a group / creates one if group does not exist 
-        group = Group.objects.get_or_create(name='suscribers')
+        group, created = Group.objects.get_or_create(name='suscribers')
         # admin, managers, contributors, suscribers, premium suscribers
         user.groups.add(group)
 
@@ -65,7 +65,7 @@ class CustomUserManager(BaseUserManager):
 
         user = self.create_user(first_name, last_name, email, password, **extra_fields)
         # Adds a admin to a group / creates one if group does not exist 
-        group = Group.objects.get_or_create(name='admin')
+        group, created = Group.objects.get_or_create(name='admin')
         user.groups.add(group)
         user.save(using=self._db)
         return user

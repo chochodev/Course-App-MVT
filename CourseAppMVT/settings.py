@@ -57,10 +57,20 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# DJANGO-ALLAUTH SETUP
 AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+# Optional email verification settings
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory' 
+ACCOUNT_EMAIL_REQUIRED = True
+
+# Redirection URLs
+LOGIN_REDIRECT_URL = '/' 
+LOGOUT_REDIRECT_URL = '/'
+
+# Setting the root url
 ROOT_URLCONF = 'CourseAppMVT.urls'
 
 TEMPLATES = [
@@ -133,3 +143,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# To set the user models
+AUTH_USER_MODEL = 'accounts.User'

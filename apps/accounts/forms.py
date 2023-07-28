@@ -12,9 +12,6 @@ class CustomErrorMessages:
         "unique": "Phone number already registered",
         "required": "This field is required",
     }
-    tz = {
-        "does_not_exist": "Invalid timezone",
-    }
 
 class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(
@@ -32,12 +29,6 @@ class CustomUserCreationForm(UserCreationForm):
         error_messages=CustomErrorMessages.email,
         widget=forms.EmailInput(attrs={"class": "form-control"}),
     )
-    # tz = forms.ModelChoiceField(
-    #     label="Timezone",
-    #     error_messages=CustomErrorMessages.tz,
-    #     queryset=Timezone.objects.all(),
-    #     widget=forms.Select(attrs={"class": "form-control"}),
-    # )
     password1 = forms.CharField(
         label="Password", widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
