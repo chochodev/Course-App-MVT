@@ -21,7 +21,3 @@ def create_login_data():
         'email': 'chocho@gmail.com',
         'password': 'ilovethis',
     }
-
-# @pytest.fixture
-# def create_login_user(create_login_data):
-#     return User.objects.create(**create_login_data)
