@@ -10,11 +10,11 @@ from apps.accounts.forms import CustomUserCreationForm
 
 class SignUpView(View):
     template_name = 'accounts/signup.html'
+
     def get(self, request, *args, **kwargs):
         form = CustomUserCreationForm()
-
         context = {
-            'form': form
+            'form': form,
         }
         return render(request, template_name=self.template_name, context=context)
     
@@ -25,16 +25,17 @@ class SignUpView(View):
             messages.success(request, f'Created account for {user.first_name}')
 
             return HttpResponse('Signed up user')
-        return redirect('signin')
+            # return redirect('home')
+        return redirect('signup')
 
 class SignInView(LoginView):
     template_name = 'accounts/signin.html'
 
     def form_valid(self, form):
-        messages.success(self.request, 'Sign in success')
         user = form.get_user()
         user.is_active = True
         user.save()
+        messages.success(self.request, f'Signed In as {user.first_name}')
 
         return super().form_valid(form)
 

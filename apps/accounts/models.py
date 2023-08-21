@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from apps.core.models import TimeStamp
 from apps.accounts.manager import CustomUserManager
 
 
@@ -12,6 +11,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     first_name = models.CharField(verbose_name=(_("First name")), max_length=25, null=True)
     last_name = models.CharField(verbose_name=(_("Last name")), max_length=25, null=True)
+    username = models.CharField(verbose_name=(_("Username")), unique=True, max_length=25, null=True)
     email = models.EmailField(verbose_name=(_("Email address")), unique=True)
     # avatar = models.ImageField(upload_to="bidout-auction-v1/avatars/", null=True)
 
@@ -20,7 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["first_name", "last_name"]
+    REQUIRED_FIELDS = ["first_name", "last_name", "username"]
 
     objects = CustomUserManager()
 

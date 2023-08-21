@@ -14,10 +14,10 @@ class CustomUserManager(BaseUserManager):
 
     def create_user(self, first_name, last_name, email, password, **extra_fields):
         if not first_name:
-            raise ValueError(_("Users must submit a last name"))
+            raise ValueError(_("Users must submit a first name"))
 
         if not last_name:
-            raise ValueError(_("Users must submit a first name"))
+            raise ValueError(_("Users must submit a last name"))
 
         if email:
             self.normalize_email(email)
@@ -40,7 +40,7 @@ class CustomUserManager(BaseUserManager):
         # admin, managers, contributors, suscribers, premium suscribers
         user.groups.add(group)
 
-        user.save(using=self._db)
+        user.save()
         return user
 
     def create_superuser(self, first_name, last_name, email, password, **extra_fields):
@@ -67,5 +67,6 @@ class CustomUserManager(BaseUserManager):
         # Adds a admin to a group / creates one if group does not exist 
         group, created = Group.objects.get_or_create(name='admin')
         user.groups.add(group)
-        user.save(using=self._db)
+        
+        user.save()
         return user
