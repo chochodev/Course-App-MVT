@@ -35,13 +35,13 @@ class SignInView(LoginView):
         user = form.get_user()
         user.is_active = True
         user.save()
+        print('View session: ', self.request.session.keys())
         messages.success(self.request, f'Signed In as {user.first_name}')
 
         return super().form_valid(form)
 
     def get_success_url(self):
-        return redirect('signup')
-        # return reverse('home')
+        return reverse('home')
     
 class SignOutView(LogoutRequiredMixin, LogoutView):
     def get_next_page(self):

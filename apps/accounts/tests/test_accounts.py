@@ -1,4 +1,5 @@
 import pytest
+import pdb
 from django.urls import reverse
 from django.contrib.auth import get_user_model, get_user
 from django.contrib.messages import get_messages
@@ -24,10 +25,10 @@ class TestAuth:
     def test_signin_user(self, client, new_user, create_signin_data):
         # Creates a user before signing in
         user = new_user
+        print('User: ', get_user(client))
+        # pdb.set_trace()
         response = client.post(self.signin_url, create_signin_data)
-        for ses in client.session:
-            print(ses)
-        print(client.session)
+        print('Session keys: ', client.session.keys())
 
         # Checks if user.is_active == True
         # User = get_user_model()
