@@ -5,21 +5,21 @@ from django.urls import reverse
 from django.contrib import messages
 
 from apps.accounts.mixins import LogoutRequiredMixin, LoginRequiredMixin
-from apps.accounts.forms import CustomUserCreationForm
+from apps.accounts.forms import CustomUserSignUpForm, CustomUserSignInForm
 
 
 class SignUpView(View):
     template_name = 'accounts/signup.html'
 
     def get(self, request, *args, **kwargs):
-        form = CustomUserCreationForm()
+        form = CustomUserSignUpForm()
         context = {
             'form': form,
         }
         return render(request, template_name=self.template_name, context=context)
     
     def post(self, request, *args, **kwargs):
-        form = CustomUserCreationForm(request.POST)
+        form = CustomUserSignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             messages.success(request, f'Created account for {user.first_name}')
@@ -29,6 +29,7 @@ class SignUpView(View):
         return redirect('signup')
 
 class SignInView(LoginView):
+    authentication_form = CustomUserSignInForm
     template_name = 'accounts/signin.html'
 
     def form_valid(self, form):

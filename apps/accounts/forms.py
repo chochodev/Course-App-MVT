@@ -1,9 +1,9 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django import forms
 from apps.accounts.models import User
 
 
-class CustomUserCreationForm(UserCreationForm):
+class CustomUserSignUpForm(UserCreationForm):
     first_name = forms.CharField(
         max_length=25,
         label="First name",
@@ -53,3 +53,16 @@ class CustomUserCreationForm(UserCreationForm):
             "password2",
         ]
 
+class CustomUserSignInForm(AuthenticationForm):
+    username_or_email = forms.CharField(
+        label="Username or Email",
+        error_messages={
+            "invalid":"{value} is invalid",
+            
+        },
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Username or Email"}),
+    )
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Password"}),
+    )
