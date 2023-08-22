@@ -3,7 +3,10 @@ from django.views import View
 from django.shortcuts import render, HttpResponse, redirect
 from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import check_password, make_password
 
+from apps.accounts.models import User
 from apps.accounts.mixins import LogoutRequiredMixin, LoginRequiredMixin
 from apps.accounts.forms import CustomUserSignUpForm, CustomUserSignInForm
 
@@ -28,21 +31,29 @@ class SignUpView(View):
             # return redirect('home')
         return redirect('signup')
 
-class SignInView(LoginView):
-    authentication_form = CustomUserSignInForm
+class SignInView(View):
     template_name = 'accounts/signin.html'
 
-    def form_valid(self, form):
-        user = form.get_user()
-        user.is_active = True
-        user.save()
-        print('View session: ', self.request.session.keys())
-        messages.success(self.request, f'Signed In as {user.first_name}')
+    def get(self, request, *args, **kwargs):
+        form = CustomUserSignInForm()
+        context = {
+            'form':form,
+        } 
+        return render(request, template_name=self.template_name, context=context)
 
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('home')
+    def post(self, request, *args, **kwargs):
+        form = CustomUserSignInForm(request.POST)
+        if form.is_valid():
+            user = authenticate(
+                request, 
+                username=form.cleaned_data['username_or_email'], 
+                password=form.cleaned_data['password']
+            )
+            if user:
+                login(request, user)
+                return redirect('home')
+            messages.error('Invalid credentials') 
+        return redirect('signin')
     
 class SignOutView(LogoutRequiredMixin, LogoutView):
     def get_next_page(self):

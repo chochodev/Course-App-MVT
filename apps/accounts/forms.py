@@ -42,6 +42,15 @@ class CustomUserSignUpForm(UserCreationForm):
         widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder":"Confirm Password"})
     )
 
+    def check(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 != password2:
+            raise forms.ValidationError('Passwords do not match')
+        return cleaned_data
+
     class Meta:
         model = User
         fields = [
@@ -58,11 +67,15 @@ class CustomUserSignInForm(AuthenticationForm):
         label="Username or Email",
         error_messages={
             "invalid":"{value} is invalid",
-            
+            "required":"Username or Email is required"
         },
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Username or Email"}),
     )
     password = forms.CharField(
         label="Password",
+        error_messages={
+            "invalid":"{value} is invalid",
+            "required":"Username or Email is required"
+        },
         widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Password"}),
     )
