@@ -51,6 +51,8 @@ class SignInView(View):
             )
             if user:
                 login(request, user)
+                session = request.session['_auth_user_id']
+                print('Session ID: ', session)
                 return redirect('home')
             messages.error('Invalid credentials') 
         return redirect('signin')

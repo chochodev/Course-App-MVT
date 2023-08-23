@@ -7,8 +7,7 @@ from apps.accounts.manager import CustomUserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    pkid = models.BigAutoField(primary_key=True, editable=False)
-    id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     first_name = models.CharField(verbose_name=(_("First name")), max_length=25, null=True)
     last_name = models.CharField(verbose_name=(_("Last name")), max_length=25, null=True)
     username = models.CharField(verbose_name=(_("Username")), unique=True, max_length=25, null=True)

@@ -1,7 +1,7 @@
 import pytest
 import pdb
 from django.urls import reverse
-from django.contrib.auth import get_user_model, get_user
+from django.contrib.auth import authenticate, get_user, login
 from django.contrib.messages import get_messages
 from apps.accounts.tests.conftest import new_user, create_signup_data
 from apps.accounts.models import User
@@ -25,21 +25,22 @@ class TestAuth:
     def test_signin_user(self, client, new_user, create_signin_data):
         # Creates a user before signing in
         user = new_user
-        print('User: ', get_user(client))
-        # pdb.set_trace()
-        response = client.post(self.signin_url, create_signin_data)
-        print('Session keys: ', client.session.keys())
 
-        # Checks if user.is_active == True
-        # User = get_user_model()
-        # signed_in_user = User.objects.get(pk=client.session['_auth_user_id'])
-        # assert signed_in_user.is_active is True
+        user = authenticate(username=user.username, password=user.password)
+        request = client.request()
 
-        # signed_in_user = get_user(client)
-        # assert signed_in_user.is_active is True
+        if user:
+            login(request, user)
+            print('Login Successfull: ', user.is_active)
+            print('Session keys: ', request.session.keys())
+
+        # signed_in_user = User.objects.get(pk=request.session['_auth_user_id'])
+        # print('Signed In User: ', signed_in_user.username)
+        pdb.set_trace()
+        assert user.is_active is True
 
         # Checks if the response redirects the user
-        assert response.status_code in [200, 302]
+        assert request .status_code in [200, 302]
 
     # @pytest.mark.django_db
     # def test_signout_user(self, client, create_signin_data):
