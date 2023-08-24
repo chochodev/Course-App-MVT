@@ -18,6 +18,8 @@ class TestAuth:
     def test_signup_user(self, client, create_signup_data):
         # Follow == redirects
         response = client.post(self.signup_url, data=create_signup_data, follow=True) 
+
+
         assert response.status_code == 200
         assert User.objects.filter(first_name=create_signup_data['first_name']).exists()
 
@@ -25,22 +27,22 @@ class TestAuth:
     def test_signin_user(self, client, new_user, create_signin_data):
         # Creates a user before signing in
         user = new_user
+        print('\nNew User: \n', user)
+        # user = authenticate(username=user.username, password=user.password)
+        print('username= ', user.username, 'password= ', user.password)
+        
+        # return
 
-        user = authenticate(username=user.username, password=user.password)
-        request = client.request()
-
-        if user:
-            login(request, user)
-            print('Login Successfull: ', user.is_active)
-            print('Session keys: ', request.session.keys())
+        response = client.post(self.signin_url, create_signin_data)
+        user = User.objects.get(email=create_signin_data['email'])
+        print('Login Successfull: ', user.is_active)
 
         # signed_in_user = User.objects.get(pk=request.session['_auth_user_id'])
         # print('Signed In User: ', signed_in_user.username)
-        pdb.set_trace()
         assert user.is_active is True
 
         # Checks if the response redirects the user
-        assert request .status_code in [200, 302]
+        assert response.status_code in [200, 302]
 
     # @pytest.mark.django_db
     # def test_signout_user(self, client, create_signin_data):

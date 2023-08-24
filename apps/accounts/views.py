@@ -29,7 +29,8 @@ class SignUpView(View):
 
             return HttpResponse('Signed up user')
             # return redirect('home')
-        return redirect('signup')
+        return HttpResponse('Error during, sign up')
+        # return redirect('signup')
 
 class SignInView(View):
     template_name = 'accounts/signin.html'
