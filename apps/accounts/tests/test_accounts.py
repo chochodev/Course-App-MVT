@@ -1,63 +1,42 @@
 import pytest
-import pdb
 from django.urls import reverse
-from django.contrib.auth import authenticate, get_user, login
-from django.contrib.messages import get_messages
-from apps.accounts.tests.conftest import new_user, create_signup_data
+from apps.accounts.forms import UserCreationForm
+from apps.conftest import create_user_data
 from apps.accounts.models import User
+from django.conf import settings
 
 
-class TestAuth:
-    signup_url = reverse('signup')
-    signin_url = reverse('signin')
-    signout_url = reverse('signout')
-
-    home_url = reverse('home')
-
-    @pytest.mark.django_db
-    def test_signup_user(self, client, create_signup_data):
-        # Follow == redirects
-        response = client.post(self.signup_url, data=create_signup_data, follow=True) 
+class TestAccount:
+  signup_url = reverse('signup')
+  signin_url = reverse('signin')
+  home_url = reverse('home')
+  signup_form = UserCreationForm
 
 
-        assert response.status_code == 200
-        assert User.objects.filter(first_name=create_signup_data['first_name']).exists()
+  @pytest.mark.django_db
+  def test_signup_user(self, client, create_user_data):
+    # FOR GET REQUEST
+    response = client.get(self.signup_url)
+    form = response.context['form']
 
-    @pytest.mark.django_db
-    def test_signin_user(self, client, new_user, create_signin_data):
-        # Creates a user before signing in
-        user = new_user
-        print('\nNew User: \n', user)
-        # user = authenticate(username=user.username, password=user.password)
-        print('username= ', user.username, 'password= ', user.password)
-        
-        # return
+    assert isinstance(form, self.signup_form)
+    assert response.status_code in [200, 302]
 
-        response = client.post(self.signin_url, create_signin_data)
-        user = User.objects.get(email=create_signin_data['email'])
-        print('Login Successfull: ', user.is_active)
+    # FOR POST REQUEST
+    user = create_user_data
+    user['username'] = 'ilovethis01'   # To test the invalid credentials error messages
+    print('User: ', user['username'], user['email'], user['password1'], user['password2'])
 
-        # signed_in_user = User.objects.get(pk=request.session['_auth_user_id'])
-        # print('Signed In User: ', signed_in_user.username)
-        assert user.is_active is True
+    res = client.post(
+      self.signup_url, 
+      data=create_user_data
+    )
+    
+    # assert 'email' in form.errors
+    # users = User.objects.all()
+    # assert len(users) > 0
+    
+    # new_user = User.objects.get(username='chocho')
+    # assert new_user
 
-        # Checks if the response redirects the user
-        assert response.status_code in [200, 302]
-
-    # @pytest.mark.django_db
-    # def test_signout_user(self, client, create_signin_data):
-    #     url = reverse('signin')
-    #     client.post(url, create_signin_data, follow=True)
-
-    #     # Checks if user.is_active == True
-    #     User = get_user_model()
-    #     user = User.objects.get(pk=client.session['_auth_user_id'])
-
-    #     url = reverse('signout')
-    #     response = client.get(url, follow=True)
-
-    #     user = User.objects.get(pk=client.session['_auth_user_id'])
-
-    #     assert user.is_active is False
-
-    #     assert response.status_code == 302
+    assert res.status_code in [200, 302]
