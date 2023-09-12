@@ -35,10 +35,6 @@ class CustomUserManager(BaseUserManager):
     user.set_password(password)
     extra_fields.setdefault("is_staff", False)
     extra_fields.setdefault("is_superuser", False)
-    # Adds a user to a group / creates one if group does not exist 
-    group, created = Group.objects.using('default').get_or_create(name='suscribers')
-    # admin, managers, contributors, suscribers, premium suscribers
-    user.groups.add(group)
 
     user.save()
     return user
@@ -64,9 +60,5 @@ class CustomUserManager(BaseUserManager):
         raise ValueError(_("Admin Account: An email address is required"))
 
     user = self.create_user(first_name, last_name, email, password, **extra_fields)
-    # Adds a admin to a group / creates one if group does not exist 
-    group, created = Group.objects.get_or_create(name='admin')
-    user.groups.add(group)
-    
     user.save()
     return user
