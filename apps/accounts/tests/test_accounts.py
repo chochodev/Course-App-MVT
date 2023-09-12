@@ -1,6 +1,7 @@
 import pytest
 from django.urls import reverse
 from apps.accounts.forms import UserCreationForm
+from django.db.models import Q
 from apps.conftest import signup_user_data, signin_user_data
 from apps.accounts.models import User
 from django.conf import settings
@@ -10,6 +11,7 @@ import re
 class TestAccount:
   signup_url = reverse('signup')
   signin_url = reverse('signin')
+  signout_url = reverse('signout')
   home_url = reverse('home')
   signup_form = UserCreationForm
 
@@ -69,6 +71,22 @@ class TestAccount:
     print('## User:', user1)
     
     user = signin_user_data
+
+    # TO TEST ERROR MESSAGES
+    test_error_messages = False
+    if test_error_messages == True:
+      user['username_or_email'] = '1234ert5r4'  # To test the invalid credentials error messages
+      res = client.post(
+        self.signup_url, 
+        data=user,
+        follow=True
+      ) 
+      signin_messages = res.context['messages']
+      
+      for message in signin_messages:
+        print('## Testing Error messages: ', message.message)
+        return
+      
     post_res = client.post(
       self.signin_url,
       data=user,
@@ -79,9 +97,18 @@ class TestAccount:
     for message in signin_messages:
       print('## Test message: ', message.message)
 
-    signed_in_user = User.objects.get(email=user['username_or_email'])
+    signed_in_user = User.objects.get(Q(email=user['username_or_email']) | Q(username=user['username_or_email']))
     assert signed_in_user
     assert signed_in_user.is_logged_in is True
-
-    print('## Testing RES: ', post_res)
     assert post_res.status_code in [200, 302]
+
+  @pytest.mark.django_db
+  def test_signout_user(self, client, signin_user_data):
+    # SIGNIN A USER
+    user = self.test_signin_user(client, signin_user_data)
+    assert user.is_logged_in
+
+    # FOR GET REQUEST
+    get_res = client.get(self.signout_url)
+    assert user.is_logged_in == False
+    assert get_res.status_code in [200, 302]

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import check_password
 from django.views import View
 from django.contrib import messages
@@ -52,36 +52,35 @@ class SignInView(View):
     return render(request, template_name=self.template)
 
   def post(self, request, *args, **kwargs):
-    username_or_email = request.POST.get('username_or_email', '')
-    password = request.POST.get('password', '')
+    username_or_email = request.POST.get('username_or_email')
+    password = request.POST.get('password')
 
-    print('## Username or Email: ', username_or_email, '\n## Password: ', password)
     try:
       user = User.objects.get(Q(username=username_or_email) | Q(email=username_or_email))
-      if not check_password(password, user.password):
+      if check_password(password, user.password):
+        login(request, user)
+        user.is_logged_in = True
+        user.save()
+      
+        messages.success(request, f'Signed in as {user.username}')
+        return redirect('home')
+      
+      else:
         messages.error(request, 'Incorrect password')
         return render(request, template_name=self.template)
       
-      else:
-        print('## Username: ', user.username)
-        user = authenticate(request, username=user.username, password=password)
-        print('## Authenticate user:', user)
-        
     except User.DoesNotExist:
-      messages.error(request, f'Invalid Username or Emails.')
+      messages.error(request, f'Invalid credentials.')
       return render(request, template_name=self.template)
-    
-    if user is not None:
-      login(request, user)
-      user.is_logged_in = True
-      user.save()
-  
-      messages.success(request, f'Signed in as {user.username}')
-      return redirect('home')
-    else:
-      messages.error(request, 'Error occured during signin.')
-      return render(request, template_name=self.template)
-    
+
+def signout(request):
+  if request.user.is_logged_in:
+    request.user.is_logged_in = False
+    request.user.save()
+    logout(request)
+
+  return redirect('signin')
+
 class HomeView(View):
   template = 'accounts/home.html'
   
