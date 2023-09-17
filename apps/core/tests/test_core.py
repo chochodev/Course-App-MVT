@@ -1,4 +1,4 @@
 from apps.conftest import *
 
-def test_core_lorem(self):
+def test_core_lorem():
   assert True == True
