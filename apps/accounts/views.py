@@ -48,16 +48,19 @@ class SignInView(View):
   template = 'accounts/signin.html'
 
   def get(self, request, *args, **kwargs):
-    
+
     return render(request, template_name=self.template)
 
   def post(self, request, *args, **kwargs):
     username_or_email = request.POST.get('username_or_email')
     password = request.POST.get('password')
 
+
     try:
       user = User.objects.get(Q(username=username_or_email) | Q(email=username_or_email))
-      if check_password(password, user.password):
+      user = authenticate(request, email=username_or_email, password=password)
+
+      if user is not None:
         login(request, user)
         user.is_logged_in = True
         user.save()
@@ -66,20 +69,28 @@ class SignInView(View):
         return redirect('home')
       
       else:
-        messages.error(request, 'Incorrect password')
+        messages.error(request, 'Incorrect password.')
         return render(request, template_name=self.template)
       
     except User.DoesNotExist:
+      print('## Error: Invalid credentials.')
       messages.error(request, f'Invalid credentials.')
       return render(request, template_name=self.template)
 
 def signout(request):
-  if request.user.is_logged_in:
-    request.user.is_logged_in = False
-    request.user.save()
-    logout(request)
-
-  return redirect('signin')
+  if 'signout' in request.POST.get('command'):
+    user = request.user
+    print('## Is user logged in: ', user.is_logged_in)
+    if user.is_authenticated:
+      user.is_logged_in = False
+      user.save()
+      logout(request)
+      print('## Is user logged in: ', user.is_logged_in)
+      messages.success(request, f'Signout of {user.username}')
+      return redirect('signin')
+    else:
+      messages.error(request, 'Error: Invalid request')
+      return redirect('signin')
 
 class HomeView(View):
   template = 'accounts/home.html'

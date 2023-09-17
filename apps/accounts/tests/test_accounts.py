@@ -59,32 +59,32 @@ class TestAccount:
   def test_signin_user(self, client, signup_user_data, signin_user_data):
     # FOR GET REQUEST
     get_res = client.get(self.signin_url)
-    
     assert get_res.status_code in [200, 302]
 
-    # FOR POST REQUEST
+    # FOR SIGN UP BEFORE SIGN IN
     signed_up_user = self.test_signup_user(client, signup_user_data)
     assert User.objects.get(email=signup_user_data['email'])
 
-    # User check
-    user1 = User.objects.all()[0]
-    print('## User:', user1)
-    
-    user = signin_user_data
 
+    user = signin_user_data
     # TO TEST ERROR MESSAGES
     test_error_messages = False
     if test_error_messages == True:
-      user['username_or_email'] = '1234ert5r4'  # To test the invalid credentials error messages
-      res = client.post(
-        self.signup_url, 
+      # To test the 'invalid credentials' error messages
+      user['username_or_email'] = '1234ert5r4' 
+
+      post_res = client.post(
+        self.signin_url,
         data=user,
         follow=True
-      ) 
-      signin_messages = res.context['messages']
+      )
+      signin_messages = post_res.context['messages']
       
       for message in signin_messages:
-        print('## Testing Error messages: ', message.message)
+        if 'error' in message.tags:
+          assert 'Invalid credentials.' in message.message
+          return
+        assert 'success' in message.tags
         return
       
     post_res = client.post(
@@ -93,9 +93,14 @@ class TestAccount:
       follow=True
     )
 
+    print('## Test signin user: ', post_res)
+
     signin_messages = post_res.context['messages']
     for message in signin_messages:
-      print('## Test message: ', message.message)
+      if 'error' in message.tags:
+        assert 'Invalid credentials.' in message.message
+        return
+      assert 'success' in message.tags
 
     signed_in_user = User.objects.get(Q(email=user['username_or_email']) | Q(username=user['username_or_email']))
     assert signed_in_user
@@ -103,12 +108,19 @@ class TestAccount:
     assert post_res.status_code in [200, 302]
 
   @pytest.mark.django_db
-  def test_signout_user(self, client, signin_user_data):
+  def test_signout_user(self, client, signup_user_data, signin_user_data):
     # SIGNIN A USER
-    user = self.test_signin_user(client, signin_user_data)
-    assert user.is_logged_in
+    user = signin_user_data
+    signin_user = self.test_signin_user(client, signup_user_data, user)
 
-    # FOR GET REQUEST
-    get_res = client.get(self.signout_url)
-    assert user.is_logged_in == False
-    assert get_res.status_code in [200, 302]
+    signed_in_user = User.objects.get(Q(email=user['username_or_email']) | Q(username=user['username_or_email']))
+    assert signed_in_user.is_logged_in
+
+    # FOR SIGN OUT REQUEST
+    post_res = client.post(self.signout_url, data={'command':'signout'}, follow=True)
+
+    signout_message = post_res.context['messages']
+    for message in signout_message:
+      if 'success' in message.tags:
+        assert f'Signout of {signup_user_data["username"]}'
+    assert post_res.status_code in [200, 302]
