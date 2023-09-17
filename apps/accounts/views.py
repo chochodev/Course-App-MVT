@@ -80,12 +80,12 @@ class SignInView(View):
 def signout(request):
   if 'signout' in request.POST.get('command'):
     user = request.user
-    print('## Is user logged in: ', user.is_logged_in)
+    
     if user.is_authenticated:
       user.is_logged_in = False
       user.save()
       logout(request)
-      print('## Is user logged in: ', user.is_logged_in)
+
       messages.success(request, f'Signout of {user.username}')
       return redirect('signin')
     else:

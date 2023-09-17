@@ -93,8 +93,6 @@ class TestAccount:
       follow=True
     )
 
-    print('## Test signin user: ', post_res)
-
     signin_messages = post_res.context['messages']
     for message in signin_messages:
       if 'error' in message.tags:
